@@ -19,11 +19,11 @@ export default class Gameboard {
     for (let i = 0; i < shipLength; i++) {
       switch (orientation) {
         case "horizontal":
-          this.battlefield.set([x + i, y].join(","), { shipIndex });
+          this.battlefield.set(this.#toCoordinateStr(x + i, y), { shipIndex });
           break;
 
         case "vertical":
-          this.battlefield.set([x, y + i].join(","), { shipIndex });
+          this.battlefield.set(this.#toCoordinateStr(x, y + i), { shipIndex });
           break;
 
         default:
@@ -33,13 +33,21 @@ export default class Gameboard {
   }
 
   receiveAttack(x, y) {
-    const data = this.battlefield.get([x, y].join(","));
+    const data = this.battlefield.get(this.#toCoordinateStr(x, y));
 
     if (data) {
       this.ships[data.shipIndex].hit();
     }
 
-    this.battlefield.set([x, y].join(","), { ...data, isHit: true });
+    this.battlefield.set(this.#toCoordinateStr(x, y), { ...data, isHit: true });
+  }
+
+  isAllShipsSunk() {
+    const sankStatus = this.ships.map((ship) => ship.isSunk());
+
+    if (sankStatus.some((status) => status === false)) return false;
+
+    return true;
   }
 
   #generateShips() {
@@ -71,11 +79,15 @@ export default class Gameboard {
     for (let i = 0; i < shipLength; i++) {
       const coordinate =
         orientation === "horizontal"
-          ? [x + i, y].join(",")
-          : [x, y + i].join(",");
+          ? this.#toCoordinateStr(x + i, y)
+          : this.#toCoordinateStr(x, y + i);
 
       if (this.battlefield.get(coordinate))
         throw new Error("The coordinate already occupied");
     }
+  }
+
+  #toCoordinateStr(x, y) {
+    return `${x},${y}`;
   }
 }

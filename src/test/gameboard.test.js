@@ -170,3 +170,77 @@ describe("Gameboard receiveAttack method", () => {
     expect(gameboard.ships[2].hitCount).toBe(1);
   });
 });
+describe("Gameboard isAllShipsSunk method", () => {
+  let gameboard;
+
+  beforeEach(() => {
+    gameboard = new Gameboard();
+  });
+
+  describe("when ship length is one", () => {
+    beforeEach(() => {
+      gameboard.ships.forEach((ship) => (ship.length = 1));
+
+      gameboard.placeShip(1, 4, "horizontal", 0);
+      gameboard.placeShip(3, 4, "horizontal", 1);
+      gameboard.placeShip(2, 4, "horizontal", 2);
+      gameboard.placeShip(5, 4, "horizontal", 3);
+      gameboard.placeShip(9, 4, "horizontal", 4);
+    });
+
+    test("should return true when all ship attacked", () => {
+      gameboard.receiveAttack(1, 4);
+      gameboard.receiveAttack(3, 4);
+      gameboard.receiveAttack(2, 4);
+      gameboard.receiveAttack(5, 4);
+      gameboard.receiveAttack(9, 4);
+
+      expect(gameboard.isAllShipsSunk()).toBe(true);
+    });
+    test("should return false when some ship not attacked", () => {
+      gameboard.receiveAttack(1, 4);
+      gameboard.receiveAttack(7, 4);
+      gameboard.receiveAttack(2, 4);
+      gameboard.receiveAttack(5, 3);
+      gameboard.receiveAttack(9, 4);
+
+      expect(gameboard.isAllShipsSunk()).toBe(false);
+    });
+  });
+  describe("when some ship length is more than one", () => {
+    beforeEach(() => {
+      gameboard.ships.forEach((ship) => (ship.length = 1));
+
+      gameboard.ships[2].length = 3;
+
+      gameboard.placeShip(1, 4, "horizontal", 0);
+      gameboard.placeShip(3, 4, "horizontal", 1);
+      gameboard.placeShip(2, 4, "vertical", 2);
+      gameboard.placeShip(5, 4, "horizontal", 3);
+      gameboard.placeShip(9, 4, "horizontal", 4);
+    });
+
+    test("should return true when all ship attacked", () => {
+      gameboard.receiveAttack(1, 4);
+      gameboard.receiveAttack(3, 4);
+      gameboard.receiveAttack(2, 4);
+      gameboard.receiveAttack(2, 5);
+      gameboard.receiveAttack(2, 6);
+      gameboard.receiveAttack(5, 4);
+      gameboard.receiveAttack(9, 4);
+
+      expect(gameboard.isAllShipsSunk()).toBe(true);
+    });
+    test("should return false when some ship not attacked", () => {
+      gameboard.receiveAttack(1, 4);
+      gameboard.receiveAttack(3, 4);
+      gameboard.receiveAttack(2, 4);
+      gameboard.receiveAttack(2, 7);
+      gameboard.receiveAttack(2, 6);
+      gameboard.receiveAttack(5, 4);
+      gameboard.receiveAttack(9, 4);
+
+      expect(gameboard.isAllShipsSunk()).toBe(false);
+    });
+  });
+});
