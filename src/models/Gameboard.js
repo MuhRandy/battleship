@@ -1,4 +1,3 @@
-import { getRandomNumber } from "../util";
 import Ship from "./Ship";
 
 export default class Gameboard {
@@ -11,19 +10,24 @@ export default class Gameboard {
       .map((item) => item[0]);
   }
 
-  placeShip(x, y, orientation, shipIndex) {
+  placeShip(coordinate, orientation, shipIndex) {
+    const [x, y] = this.#toCoordinateArr(coordinate);
     const shipLength = this.ships[shipIndex].length;
 
-    this.#checkCoordinate(x, y, orientation, shipLength);
+    this.#checkCoordinate(coordinate, orientation, shipLength);
 
     for (let i = 0; i < shipLength; i++) {
       switch (orientation) {
         case "horizontal":
-          this.battlefield.set(this.#toCoordinateStr(x + i, y), { shipIndex });
+          this.battlefield.set(String.fromCharCode(x.charCodeAt(0) + i) + y, {
+            shipIndex,
+          });
           break;
 
         case "vertical":
-          this.battlefield.set(this.#toCoordinateStr(x, y + i), { shipIndex });
+          this.battlefield.set(x + (y + i), {
+            shipIndex,
+          });
           break;
 
         default:
@@ -32,14 +36,14 @@ export default class Gameboard {
     }
   }
 
-  receiveAttack(x, y) {
-    const data = this.battlefield.get(this.#toCoordinateStr(x, y));
+  receiveAttack(coordinate) {
+    const data = this.battlefield.get(coordinate);
 
     if (data) {
       this.ships[data.shipIndex].hit();
     }
 
-    this.battlefield.set(this.#toCoordinateStr(x, y), { ...data, isHit: true });
+    this.battlefield.set(coordinate, { ...data, isHit: true });
   }
 
   isAllShipsSunk() {
@@ -53,23 +57,29 @@ export default class Gameboard {
   #generateShips() {
     const ships = [];
 
-    while (ships.length < 5) {
-      ships.push(new Ship(getRandomNumber(1, 3)));
+    for (let i = 0; i < 10; i++) {
+      if (i === 0) ships.push(new Ship(4));
+      if (i > 0 && i < 3) ships.push(new Ship(3));
+      if (i > 2 && i < 6) ships.push(new Ship(2));
+      if (i > 5) ships.push(new Ship(1));
     }
 
     return ships;
   }
 
-  #checkCoordinate(x, y, orientation, shipLength) {
-    if (x > 9 || y > 9 || x < 0 || y < 0)
+  #checkCoordinate(coordinate, orientation, shipLength) {
+    const [x, y] = this.#toCoordinateArr(coordinate);
+
+    if (x.charCodeAt(0) > 74 || x.charCodeAt(0) < 65 || y > 10 || y < 1)
       throw new Error("Ship out of battlefield");
 
     switch (orientation) {
       case "horizontal":
-        if (x + shipLength - 1 > 9) throw new Error("Ship out of battlefield");
+        if (x.charCodeAt(0) + shipLength - 1 > 74)
+          throw new Error("Ship out of battlefield");
         break;
       case "vertical":
-        if (y + shipLength - 1 > 9) throw new Error("Ship out of battlefield");
+        if (y + shipLength - 1 > 10) throw new Error("Ship out of battlefield");
         break;
 
       default:
@@ -77,17 +87,18 @@ export default class Gameboard {
     }
 
     for (let i = 0; i < shipLength; i++) {
-      const coordinate =
+      const testedCoordinate =
         orientation === "horizontal"
-          ? this.#toCoordinateStr(x + i, y)
-          : this.#toCoordinateStr(x, y + i);
+          ? String.fromCharCode(x.charCodeAt(0) + i) + y
+          : x + (y + i);
 
-      if (this.battlefield.get(coordinate))
+      if (this.battlefield.get(testedCoordinate))
         throw new Error("The coordinate already occupied");
     }
   }
 
-  #toCoordinateStr(x, y) {
-    return `${x},${y}`;
+  #toCoordinateArr(coordinate) {
+    const [x, y] = coordinate.match(/[A-Z]|\d+/g);
+    return [x, parseInt(y)];
   }
 }
