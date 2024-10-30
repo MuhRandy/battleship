@@ -3,3 +3,8 @@ export function getRandomNumber(min, max) {
 
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
+
+export function toCoordinateArr(coordinate) {
+  const [x, y] = coordinate.match(/[A-Z]|\d+/g);
+  return [x, parseInt(y)];
+}

@@ -1,5 +1,5 @@
 import Ship from "./Ship";
-import { getRandomNumber } from "../util";
+import { getRandomNumber, toCoordinateArr } from "../util";
 
 export default class Gameboard {
   ships = this.#generateShips();
@@ -16,7 +16,7 @@ export default class Gameboard {
   }
 
   placeShip(coordinate, orientation, shipIndex) {
-    const [x, y] = this.#toCoordinateArr(coordinate);
+    const [x, y] = toCoordinateArr(coordinate);
     const shipLength = this.ships[shipIndex].length;
 
     this.#checkCoordinate(coordinate, orientation, shipLength);
@@ -99,7 +99,7 @@ export default class Gameboard {
   }
 
   #checkCoordinate(coordinate, orientation, shipLength) {
-    const [x, y] = this.#toCoordinateArr(coordinate);
+    const [x, y] = toCoordinateArr(coordinate);
 
     if (x.charCodeAt(0) > 74 || x.charCodeAt(0) < 65 || y > 10 || y < 1)
       throw new Error("Ship out of battlefield");
@@ -126,10 +126,5 @@ export default class Gameboard {
       if (this.battlefield.get(testedCoordinate))
         throw new Error("The coordinate already occupied");
     }
-  }
-
-  #toCoordinateArr(coordinate) {
-    const [x, y] = coordinate.match(/[A-Z]|\d+/g);
-    return [x, parseInt(y)];
   }
 }
