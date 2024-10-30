@@ -212,3 +212,29 @@ describe("Gameboard isAllShipsSunk method", () => {
     });
   });
 });
+
+describe("Gameboard placeAllShipsToBattlefield method", () => {
+  let gameboard;
+
+  beforeEach(() => {
+    gameboard = new Gameboard();
+    gameboard.placeAllShipsToBattlefield();
+  });
+
+  test("total coordinates in battlefield is exactly 20", () => {
+    expect(gameboard.battlefield.size).toBe(20);
+  });
+
+  test("total coordinates is match ship length", () => {
+    expect(gameboard.getShipCoordinates(0).length).toBe(4);
+    expect(gameboard.getShipCoordinates(1).length).toBe(3);
+    expect(gameboard.getShipCoordinates(2).length).toBe(3);
+    expect(gameboard.getShipCoordinates(3).length).toBe(2);
+    expect(gameboard.getShipCoordinates(4).length).toBe(2);
+    expect(gameboard.getShipCoordinates(5).length).toBe(2);
+    expect(gameboard.getShipCoordinates(6).length).toBe(1);
+    expect(gameboard.getShipCoordinates(7).length).toBe(1);
+    expect(gameboard.getShipCoordinates(8).length).toBe(1);
+    expect(gameboard.getShipCoordinates(9).length).toBe(1);
+  });
+});

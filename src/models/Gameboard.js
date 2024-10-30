@@ -1,4 +1,5 @@
 import Ship from "./Ship";
+import { getRandomNumber } from "../util";
 
 export default class Gameboard {
   ships = this.#generateShips();
@@ -8,6 +9,10 @@ export default class Gameboard {
     return Array.from(this.battlefield.entries())
       .filter((item) => item[1].shipIndex === shipIndex)
       .map((item) => item[0]);
+  }
+
+  placeAllShipsToBattlefield() {
+    this.ships.forEach((ship, i) => this.#placeShipToBattleField(i));
   }
 
   placeShip(coordinate, orientation, shipIndex) {
@@ -52,6 +57,32 @@ export default class Gameboard {
     if (sankStatus.some((status) => status === false)) return false;
 
     return true;
+  }
+
+  #placeShipToBattleField(shipIndex) {
+    try {
+      this.placeShip(
+        this.#getRandomCoordinate(),
+        this.#getRandomOrientation(),
+        shipIndex,
+      );
+      // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      this.#placeShipToBattleField(shipIndex);
+    }
+  }
+
+  #getRandomCoordinate() {
+    const x = String.fromCharCode(getRandomNumber(65, 74));
+    const y = getRandomNumber(1, 10);
+
+    return x + y;
+  }
+
+  #getRandomOrientation() {
+    const orientation = ["horizontal", "vertical"];
+
+    return orientation[getRandomNumber(0, 1)];
   }
 
   #generateShips() {
