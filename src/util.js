@@ -8,3 +8,7 @@ export function toCoordinateArr(coordinate) {
   const [x, y] = coordinate.match(/[A-Z]|\d+/g);
   return [x, parseInt(y)];
 }
+
+export function incrementLetter(letter, num) {
+  return String.fromCharCode(letter.charCodeAt(0) + num);
+}

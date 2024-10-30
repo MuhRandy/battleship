@@ -1,5 +1,5 @@
 import Ship from "./Ship";
-import { getRandomNumber, toCoordinateArr } from "../util";
+import { getRandomNumber, incrementLetter, toCoordinateArr } from "../util";
 
 export default class Gameboard {
   ships = this.#generateShips();
@@ -24,7 +24,7 @@ export default class Gameboard {
     for (let i = 0; i < shipLength; i++) {
       switch (orientation) {
         case "horizontal":
-          this.battlefield.set(String.fromCharCode(x.charCodeAt(0) + i) + y, {
+          this.battlefield.set(incrementLetter(x, i) + y, {
             shipIndex,
           });
           break;
@@ -119,9 +119,7 @@ export default class Gameboard {
 
     for (let i = 0; i < shipLength; i++) {
       const testedCoordinate =
-        orientation === "horizontal"
-          ? String.fromCharCode(x.charCodeAt(0) + i) + y
-          : x + (y + i);
+        orientation === "horizontal" ? incrementLetter(x, i) + y : x + (y + i);
 
       if (this.battlefield.get(testedCoordinate))
         throw new Error("The coordinate already occupied");
