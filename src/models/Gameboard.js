@@ -99,30 +99,127 @@ export default class Gameboard {
   }
 
   #checkCoordinate(coordinate, orientation, shipLength) {
+    if (this.#isOutOfBounds(coordinate, orientation, shipLength))
+      this.#throwError("out of bounds");
+
+    if (this.#isOccupied(coordinate, orientation, shipLength))
+      this.#throwError("occupied");
+  }
+
+  #isBattlefieldHas(coordinate) {
+    return this.battlefield.has(coordinate);
+  }
+
+  #isOutOfBounds(coordinate, orientation, shipLength) {
     const [x, y] = toCoordinateArr(coordinate);
 
     if (x.charCodeAt(0) > 74 || x.charCodeAt(0) < 65 || y > 10 || y < 1)
-      throw new Error("Ship out of battlefield");
+      return true;
 
-    switch (orientation) {
-      case "horizontal":
-        if (x.charCodeAt(0) + shipLength - 1 > 74)
-          throw new Error("Ship out of battlefield");
-        break;
-      case "vertical":
-        if (y + shipLength - 1 > 10) throw new Error("Ship out of battlefield");
-        break;
+    if (orientation === "horizontal" && x.charCodeAt(0) + shipLength - 1 > 74)
+      return true;
 
-      default:
-        throw new Error("Orientation must be vertical or horizontal");
-    }
+    if (orientation === "vertical" && y + shipLength - 1 > 10) return true;
+
+    return false;
+  }
+
+  #isOccupied(coordinate, orientation, shipLength) {
+    const [x, y] = toCoordinateArr(coordinate);
 
     for (let i = 0; i < shipLength; i++) {
-      const testedCoordinate =
-        orientation === "horizontal" ? incrementLetter(x, i) + y : x + (y + i);
+      let testedCoordinate;
 
-      if (this.battlefield.get(testedCoordinate))
+      if (orientation === "horizontal")
+        testedCoordinate = incrementLetter(x, i) + y;
+
+      if (orientation === "vertical") testedCoordinate = x + (y + i);
+
+      if (this.#isBattlefieldHas(testedCoordinate)) return true;
+
+      if (this.#isAdjacent(testedCoordinate, orientation, shipLength, i))
+        return true;
+    }
+
+    return false;
+  }
+
+  #isAdjacent(testedCoordinate, orientation, shipLength, i) {
+    const [testedX, testedY] = toCoordinateArr(testedCoordinate);
+
+    const beforeTX = incrementLetter(testedX, -1);
+    const afterTX = incrementLetter(testedX, 1);
+
+    const belowTY = testedY + 1;
+    const aboveTY = testedY - 1;
+
+    const topLeftTC = beforeTX + aboveTY;
+    const bottomLeftTC = beforeTX + belowTY;
+
+    const topRightTC = afterTX + aboveTY;
+    const bottomRightTC = afterTX + belowTY;
+
+    if (orientation === "horizontal") {
+      if (
+        i === 0 &&
+        (this.#isBattlefieldHas(beforeTX + testedY) ||
+          this.#isBattlefieldHas(topLeftTC) ||
+          this.#isBattlefieldHas(bottomLeftTC))
+      )
+        return true;
+
+      if (
+        i === shipLength - 1 &&
+        (this.#isBattlefieldHas(afterTX + testedY) ||
+          this.#isBattlefieldHas(topRightTC) ||
+          this.#isBattlefieldHas(bottomRightTC))
+      )
+        return true;
+
+      if (
+        this.#isBattlefieldHas(testedX + belowTY) ||
+        this.#isBattlefieldHas(testedX + aboveTY)
+      )
+        return true;
+    }
+
+    if (orientation === "vertical") {
+      if (
+        i === 0 &&
+        (this.#isBattlefieldHas(testedX + aboveTY) ||
+          this.#isBattlefieldHas(topLeftTC) ||
+          this.#isBattlefieldHas(topRightTC))
+      )
+        return true;
+
+      if (
+        i === shipLength - 1 &&
+        (this.#isBattlefieldHas(testedX + belowTY) ||
+          this.#isBattlefieldHas(bottomLeftTC) ||
+          this.#isBattlefieldHas(bottomRightTC))
+      )
+        return true;
+
+      if (
+        this.#isBattlefieldHas(beforeTX + testedY) ||
+        this.#isBattlefieldHas(afterTX + testedY)
+      )
+        return true;
+    }
+
+    return false;
+  }
+
+  #throwError(type) {
+    switch (type) {
+      case "occupied":
         throw new Error("The coordinate already occupied");
+
+      case "out of bounds":
+        throw new Error("Ship out of bounds battlefield");
+
+      default:
+        throw new Error(`Error with type ${type} doesn't exist`);
     }
   }
 }

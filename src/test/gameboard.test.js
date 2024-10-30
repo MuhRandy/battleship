@@ -69,33 +69,34 @@ describe("Gameboard placeShip method", () => {
     gameboard = new Gameboard();
   });
 
-  describe("should throw 'Ship out of battlefield' when coordinate greater than J or 10", () => {
+  describe("should throw 'Ship out of bounds battlefield' when coordinate greater than J or 10", () => {
+    const errorMessage = "Ship out of bounds battlefield";
     test("horizontal", () => {
       expect(() => gameboard.placeShip("K7", "horizontal", 9)).toThrow(
-        "Ship out of battlefield",
+        errorMessage,
       );
       expect(() => gameboard.placeShip("J7", "horizontal", 5)).toThrow(
-        "Ship out of battlefield",
+        errorMessage,
       );
       expect(() => gameboard.placeShip("I7", "horizontal", 1)).toThrow(
-        "Ship out of battlefield",
+        errorMessage,
       );
       expect(() => gameboard.placeShip("H7", "horizontal", 0)).toThrow(
-        "Ship out of battlefield",
+        errorMessage,
       );
     });
     test("vertical", () => {
       expect(() => gameboard.placeShip("A11", "vertical", 9)).toThrow(
-        "Ship out of battlefield",
+        errorMessage,
       );
       expect(() => gameboard.placeShip("A10", "vertical", 5)).toThrow(
-        "Ship out of battlefield",
+        errorMessage,
       );
       expect(() => gameboard.placeShip("A9", "vertical", 1)).toThrow(
-        "Ship out of battlefield",
+        errorMessage,
       );
       expect(() => gameboard.placeShip("A8", "vertical", 0)).toThrow(
-        "Ship out of battlefield",
+        errorMessage,
       );
     });
   });
@@ -103,6 +104,13 @@ describe("Gameboard placeShip method", () => {
     gameboard.placeShip("D4", "horizontal", 1);
 
     expect(() => gameboard.placeShip("E3", "vertical", 2)).toThrow(
+      "The coordinate already occupied",
+    );
+  });
+  test('should throw "The coordinate already occupied" when try to placeShip adjacent to other ship', () => {
+    gameboard.placeShip("A1", "horizontal", 1);
+
+    expect(() => gameboard.placeShip("B1", "horizontal", 2)).toThrow(
       "The coordinate already occupied",
     );
   });
@@ -140,76 +148,71 @@ describe("Gameboard isAllShipsSunk method", () => {
 
   beforeEach(() => {
     gameboard = new Gameboard();
+
+    gameboard.placeShip("A1", "vertical", 0);
+    gameboard.placeShip("C1", "horizontal", 1);
+    gameboard.placeShip("C3", "horizontal", 2);
+    gameboard.placeShip("G1", "horizontal", 3);
+    gameboard.placeShip("G3", "horizontal", 4);
+    gameboard.placeShip("J1", "vertical", 5);
+    gameboard.placeShip("A10", "horizontal", 6);
+    gameboard.placeShip("C10", "horizontal", 7);
+    gameboard.placeShip("E10", "horizontal", 8);
+    gameboard.placeShip("G10", "horizontal", 9);
   });
 
-  describe("when ship length is one", () => {
-    beforeEach(() => {
-      gameboard.placeShip("A1", "vertical", 0);
-      gameboard.placeShip("C1", "horizontal", 1);
-      gameboard.placeShip("C3", "horizontal", 2);
-      gameboard.placeShip("G1", "horizontal", 3);
-      gameboard.placeShip("G3", "horizontal", 4);
-      gameboard.placeShip("J1", "vertical", 5);
-      gameboard.placeShip("A10", "horizontal", 6);
-      gameboard.placeShip("C10", "horizontal", 7);
-      gameboard.placeShip("E10", "horizontal", 8);
-      gameboard.placeShip("G10", "horizontal", 9);
-    });
+  const attackTheBiggestShip = () => {
+    gameboard.receiveAttack("A1");
+    gameboard.receiveAttack("A2");
+    gameboard.receiveAttack("A3");
+    gameboard.receiveAttack("A4");
+  };
 
-    const attackTheBiggestShip = () => {
-      gameboard.receiveAttack("A1");
-      gameboard.receiveAttack("A2");
-      gameboard.receiveAttack("A3");
-      gameboard.receiveAttack("A4");
-    };
+  const attackAllBeforeTheBiggestShip = () => {
+    gameboard.receiveAttack("C1");
+    gameboard.receiveAttack("D1");
+    gameboard.receiveAttack("E1");
 
-    const attackAllBeforeTheBiggestShip = () => {
-      gameboard.receiveAttack("C1");
-      gameboard.receiveAttack("D1");
-      gameboard.receiveAttack("E1");
+    gameboard.receiveAttack("C3");
+    gameboard.receiveAttack("D3");
+    gameboard.receiveAttack("E3");
+  };
 
-      gameboard.receiveAttack("C3");
-      gameboard.receiveAttack("D3");
-      gameboard.receiveAttack("E3");
-    };
+  const attackAllAfterTheSmallestShips = () => {
+    gameboard.receiveAttack("G1");
+    gameboard.receiveAttack("H1");
 
-    const attackAllAfterTheSmallestShips = () => {
-      gameboard.receiveAttack("G1");
-      gameboard.receiveAttack("H1");
+    gameboard.receiveAttack("G3");
+    gameboard.receiveAttack("H3");
 
-      gameboard.receiveAttack("G3");
-      gameboard.receiveAttack("H3");
+    gameboard.receiveAttack("J1");
+    gameboard.receiveAttack("J2");
+  };
 
-      gameboard.receiveAttack("J1");
-      gameboard.receiveAttack("J2");
-    };
+  const attackAllTheSmallestShips = () => {
+    gameboard.receiveAttack("A10");
+    gameboard.receiveAttack("C10");
+    gameboard.receiveAttack("E10");
+    gameboard.receiveAttack("G10");
+  };
 
-    const attackAllTheSmallestShips = () => {
-      gameboard.receiveAttack("A10");
-      gameboard.receiveAttack("C10");
-      gameboard.receiveAttack("E10");
-      gameboard.receiveAttack("G10");
-    };
+  const attackAllShips = () => {
+    attackTheBiggestShip();
+    attackAllBeforeTheBiggestShip();
+    attackAllAfterTheSmallestShips();
+    attackAllTheSmallestShips();
+  };
+  test("should return true when all ship attacked", () => {
+    attackAllShips();
 
-    const attackAllShips = () => {
-      attackTheBiggestShip();
-      attackAllBeforeTheBiggestShip();
-      attackAllAfterTheSmallestShips();
-      attackAllTheSmallestShips();
-    };
+    expect(gameboard.isAllShipsSunk()).toBe(true);
+  });
+  test("should return false when some ship not attacked", () => {
+    attackAllTheSmallestShips();
+    attackAllBeforeTheBiggestShip();
+    attackTheBiggestShip();
 
-    test("should return true when all ship attacked", () => {
-      attackAllShips();
-
-      expect(gameboard.isAllShipsSunk()).toBe(true);
-    });
-    test("should return false when some ship not attacked", () => {
-      attackAllTheSmallestShips();
-      attackAllBeforeTheBiggestShip();
-      attackTheBiggestShip();
-
-      expect(gameboard.isAllShipsSunk()).toBe(false);
-    });
+    expect(gameboard.isAllShipsSunk()).toBe(false);
   });
 });
 
