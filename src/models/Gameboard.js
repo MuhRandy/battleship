@@ -4,10 +4,11 @@ import { getRandomNumber, incrementLetter, toCoordinateArr } from "../util";
 export default class Gameboard {
   ships = this.#generateShips();
   battlefield = new Map();
+  hitLog = new Set();
 
   getShipCoordinates(shipIndex) {
     return Array.from(this.battlefield.entries())
-      .filter((item) => item[1].shipIndex === shipIndex)
+      .filter((item) => item[1] === shipIndex)
       .map((item) => item[0]);
   }
 
@@ -24,15 +25,11 @@ export default class Gameboard {
     for (let i = 0; i < shipLength; i++) {
       switch (orientation) {
         case "horizontal":
-          this.battlefield.set(incrementLetter(x, i) + y, {
-            shipIndex,
-          });
+          this.battlefield.set(incrementLetter(x, i) + y, shipIndex);
           break;
 
         case "vertical":
-          this.battlefield.set(x + (y + i), {
-            shipIndex,
-          });
+          this.battlefield.set(x + (y + i), shipIndex);
           break;
 
         default:
@@ -42,13 +39,18 @@ export default class Gameboard {
   }
 
   receiveAttack(coordinate) {
-    const data = this.battlefield.get(coordinate);
+    if (this.hitLog.has(coordinate))
+      throw new Error("The coordinate already hit");
 
-    if (data) {
-      this.ships[data.shipIndex].hit();
+    this.hitLog.add(coordinate);
+
+    if (this.#isBattlefieldHas(coordinate)) {
+      const shipIndex = this.battlefield.get(coordinate);
+      this.ships[shipIndex].hit();
+      return "hit ship";
     }
 
-    this.battlefield.set(coordinate, { ...data, isHit: true });
+    return "hit miss";
   }
 
   isAllShipsSunk() {
@@ -57,6 +59,12 @@ export default class Gameboard {
     if (sankStatus.some((status) => status === false)) return false;
 
     return true;
+  }
+
+  randomiseShips() {
+    this.battlefield = new Map();
+
+    this.placeAllShipsToBattlefield();
   }
 
   #placeShipToBattleField(shipIndex) {

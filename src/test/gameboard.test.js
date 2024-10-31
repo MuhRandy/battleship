@@ -114,6 +114,18 @@ describe("Gameboard placeShip method", () => {
       "The coordinate already occupied",
     );
   });
+  test("should fill the battlefield with corresponding ship index", () => {
+    gameboard.placeShip("H2", "vertical", 0);
+    gameboard.placeShip("A5", "horizontal", 1);
+
+    expect(gameboard.battlefield.get("H2")).toBe(0);
+    expect(gameboard.battlefield.get("H3")).toBe(0);
+    expect(gameboard.battlefield.get("H4")).toBe(0);
+    expect(gameboard.battlefield.get("H5")).toBe(0);
+    expect(gameboard.battlefield.get("A5")).toBe(1);
+    expect(gameboard.battlefield.get("B5")).toBe(1);
+    expect(gameboard.battlefield.get("C5")).toBe(1);
+  });
 });
 
 describe("Gameboard receiveAttack method", () => {
@@ -124,22 +136,25 @@ describe("Gameboard receiveAttack method", () => {
 
     gameboard.placeShip("F4", "horizontal", 2);
     gameboard.receiveAttack("F4");
+    gameboard.receiveAttack("A3");
   });
 
-  test("should return object with isHit true when ship attacked", () => {
-    expect(gameboard.battlefield.get("F4")).toStrictEqual({
-      shipIndex: 2,
-      isHit: true,
-    });
-  });
-  test("should return object with isHit true when no ship attacked", () => {
-    gameboard.receiveAttack("A3");
-    expect(gameboard.battlefield.get("A3")).toStrictEqual({
-      isHit: true,
-    });
+  test("should add coordinate to hitLog", () => {
+    const hitLog = Array.from(gameboard.hitLog.keys());
+    expect(hitLog).toContain("F4");
+    expect(hitLog).toContain("A3");
   });
   test("hitCount of ship receiveAttack increase", () => {
     expect(gameboard.ships[2].hitCount).toBe(1);
+  });
+  test("should return if hit ship or not", () => {
+    expect(gameboard.receiveAttack("G4")).toBe("hit ship");
+    expect(gameboard.receiveAttack("A5")).toBe("hit miss");
+  });
+  test("should throw 'The coordinate already hit' if coordinate hit twice", () => {
+    expect(() => gameboard.receiveAttack("F4")).toThrow(
+      "The coordinate already hit",
+    );
   });
 });
 
