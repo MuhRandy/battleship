@@ -12,3 +12,10 @@ export function toCoordinateArr(coordinate) {
 export function incrementLetter(letter, num) {
   return String.fromCharCode(letter.charCodeAt(0) + num);
 }
+
+export function getRandomCoordinate() {
+  const x = String.fromCharCode(getRandomNumber(65, 74));
+  const y = getRandomNumber(1, 10);
+
+  return x + y;
+}

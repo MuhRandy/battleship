@@ -1,5 +1,10 @@
 import Ship from "./Ship";
-import { getRandomNumber, incrementLetter, toCoordinateArr } from "../util";
+import {
+  getRandomCoordinate,
+  getRandomNumber,
+  incrementLetter,
+  toCoordinateArr,
+} from "../util";
 
 export default class Gameboard {
   ships = this.#generateShips();
@@ -67,10 +72,16 @@ export default class Gameboard {
     this.placeAllShipsToBattlefield();
   }
 
+  resetGameboard() {
+    this.ships = this.#generateShips();
+    this.randomiseShips();
+    this.hitLog = new Set();
+  }
+
   #placeShipToBattleField(shipIndex) {
     try {
       this.placeShip(
-        this.#getRandomCoordinate(),
+        getRandomCoordinate(),
         this.#getRandomOrientation(),
         shipIndex,
       );
@@ -78,13 +89,6 @@ export default class Gameboard {
     } catch (error) {
       this.#placeShipToBattleField(shipIndex);
     }
-  }
-
-  #getRandomCoordinate() {
-    const x = String.fromCharCode(getRandomNumber(65, 74));
-    const y = getRandomNumber(1, 10);
-
-    return x + y;
   }
 
   #getRandomOrientation() {
